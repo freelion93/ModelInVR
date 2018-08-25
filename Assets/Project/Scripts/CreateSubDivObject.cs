@@ -12,7 +12,6 @@ public class CreateSubDivObject : MonoBehaviour
 
     private float speed = 2.5f;
     private float speedRotation = 2.0f;
-    private float speedIncreaser = 1;
 
     private int ChangeLevel = 2;
     public Text SubdivLevel;
@@ -21,15 +20,11 @@ public class CreateSubDivObject : MonoBehaviour
     public Text SizeOfObject;
 
     public Material Static;
-    public Texture2D CursorTexture;
-    public Texture2D CursorTexture_Selected;
-    public Texture2D CursorTexture_Vertice;
-
-    private Vector3 screenPoint;
-    private Vector3 offset;
 
     Ray myRay;
     RaycastHit hit;
+
+    public static Mesh control_mesh;
 
     void Start()
     {
@@ -39,22 +34,25 @@ public class CreateSubDivObject : MonoBehaviour
 
     void Update()
     {
+        CreateObject();
+        ControlCreateObject();
         GetObject();
+        MovementControl();
 
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            speedIncreaser = 2f;
-        }
+    }
 
+    void CreateObject()
+    {
         if (Input.GetButtonDown("Fire2"))
         {
             // Create a new Mesh GameObject and add Catmull-Clark to it
+
             GameObject target = new GameObject("Snowball");
             myRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             if (Physics.Raycast(myRay, out hit))
             {
-                target.transform.transform.position = hit.point;
+                target.transform.position = hit.point;
             }
             else
             {
@@ -82,11 +80,12 @@ public class CreateSubDivObject : MonoBehaviour
                 3, 7, 4, 0,
             };
 
-            Mesh control_mesh = new Mesh();
+            control_mesh = new Mesh();
             control_mesh.Clear();
             control_mesh.vertices = vertices;
             control_mesh.SetIndices(indices, MeshTopology.Quads, 0);
             control_mesh.RecalculateNormals();
+
 
             MeshFilter mf = target.AddComponent<MeshFilter>();
             mf.mesh = control_mesh;
@@ -101,9 +100,12 @@ public class CreateSubDivObject : MonoBehaviour
             for (int i = 0; i < control_mesh.vertices.Length; i++)
             {
                 Debug.Log(control_mesh.vertices[i]);
-           }
+            }
         }
+    }
 
+    void ControlCreateObject()
+    {
         //Changing the Level of subdivision
         if (Input.GetAxis("Mouse ScrollWheel") > 0f) // Increase
         {
@@ -115,7 +117,7 @@ public class CreateSubDivObject : MonoBehaviour
             else
             {
                 Debug.Log("Level of smoothing is too big");
-            }          
+            }
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0f) // Decrease
         {
@@ -147,24 +149,6 @@ public class CreateSubDivObject : MonoBehaviour
                 Debug.Log("Size can't be negative");
             }
         }
-        //Towards and backward movements
-        if (Input.GetKey(KeyCode.W))
-        {
-            transform.position += transform.forward * speed * Time.deltaTime * speedIncreaser;
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            transform.position -= transform.forward * speed * Time.deltaTime * speedIncreaser;
-        }
-        //Keyboard rotation
-        if (Input.GetKey(KeyCode.A))
-        {
-            transform.Rotate(Vector3.down * speedRotation);
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            transform.Rotate(Vector3.up * speedRotation);
-        }
     }
 
     void GetObject()
@@ -176,13 +160,11 @@ public class CreateSubDivObject : MonoBehaviour
         {
             if (hit.collider.name == "Snowball")
             {
-                Cursor.SetCursor(this.CursorTexture_Selected, Vector2.zero, CursorMode.Auto);
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     if (hit.collider.transform.childCount < 1)
                     {
                         GetSelect(hit.collider.gameObject);
-                        RemoveDubs(hit.collider.gameObject);
                     }
                     else
                     {
@@ -190,22 +172,11 @@ public class CreateSubDivObject : MonoBehaviour
                     }
                 }
             }
-            else if (hit.collider.name == "Sphere")
+            if (hit.collider.name == "Sphere")
             {
-                Cursor.SetCursor(this.CursorTexture_Vertice, Vector2.zero, CursorMode.Auto);
-                if (VertMove.Activator)
-                {
-                    for (int i=0; i < hit.collider.gameObject.transform.parent.gameObject.GetComponent<MeshFilter>().mesh.vertices.Length; i++)
-                    {
-                        if (hit.collider.gameObject.transform.parent.gameObject.GetComponent<MeshFilter>().mesh.vertices[i] == hit.collider.gameObject.transform.position)
-                        {
-                            
-                        }
-                    }
-                }
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    if(hit.collider.gameObject.GetComponent<Renderer>().material.color == Color.blue)
+                    if (hit.collider.gameObject.GetComponent<Renderer>().material.color == Color.blue)
                     {
                         hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.red;
                     }
@@ -215,62 +186,70 @@ public class CreateSubDivObject : MonoBehaviour
                     }
                 }
             }
-            else
-            {
-                Cursor.SetCursor(this.CursorTexture, Vector2.zero, CursorMode.Auto);
-            }
+        }
+    }
+
+    //Towards and backward movements & Keyboard rotation
+    void MovementControl()
+    {
+        if (Input.GetKey(KeyCode.W))
+        {
+            transform.position += transform.forward * speed * Time.deltaTime;
+        }
+        if (Input.GetKey(KeyCode.S))
+        {
+            transform.position -= transform.forward * speed * Time.deltaTime;
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            transform.Rotate(Vector3.down * speedRotation);
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            transform.Rotate(Vector3.up * speedRotation);
         }
     }
 
     //Selecting the object and creating the childrens spheres (marks for vertices)
-    void GetSelect(GameObject gameObject)
+    void GetSelect(GameObject snowball)
     {
-        Vector3[] vertices = gameObject.GetComponent<MeshFilter>().mesh.vertices;
-        GameObject[] Spheres = new GameObject[vertices.Length];
-        for (int i = 0; i < vertices.Length; i++)
+        Vector3[] LocalVertices = snowball.GetComponent<MeshFilter>().mesh.vertices;
+
+        GameObject[] Spheres = new GameObject[LocalVertices.Length];
+        for (int i = 0; i < LocalVertices.Length; i++)
         {
             Spheres[i] = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            Spheres[i].transform.parent = gameObject.transform;
+            Spheres[i].name = i.ToString();
+            Spheres[i].transform.parent = snowball.transform;
             Spheres[i].GetComponent<Renderer>().material = Static;
-            Spheres[i].transform.position = vertices[i] + gameObject.transform.position;
+            Spheres[i].transform.position = LocalVertices[i] + snowball.transform.position;
             Spheres[i].transform.localScale = new Vector3(0.1F, 0.1F, 0.1F) * Size;
             Spheres[i].AddComponent<VertMove>();
-
         }
-    }
 
-    //Deselecting the object and removing the childrens spheres (marks for vertices)
-    void Deselect (GameObject gameObject)
-    {
-        for (int i = 0; i < gameObject.transform.childCount; i++)
-        {
-            GameObject.Destroy(gameObject.transform.GetChild(i).gameObject);
-        }
-    }
-
-    //The vertices array contains 24 elements, the function RemoveDubs was written to get rid of the duplicate vertices
-    void RemoveDubs(GameObject gameObject)
-    {
-        //create one loop for array of childrens values
-        for (int i = 0; i < gameObject.transform.childCount; i++)
+        //The vertices array contains 24 elements, 
+        //so here we are getting rid of the duplicate vertices
+        //we start with creating one loop for array of childrens values
+        for (int i = 0; i < snowball.transform.childCount; i++)
         {
             //create nested loop for compare current values with actual value of array of childrens
-            for (int j = i + 1; j < gameObject.transform.childCount; j++)
+            for (int j = i + 1; j < snowball.transform.childCount; j++)
             {
                 //if we found a duplicate position of the two childrens we are removing one of them
-                if (gameObject.transform.GetChild(i).gameObject.transform.position == gameObject.transform.GetChild(j).gameObject.transform.position)
+                if (snowball.transform.GetChild(i).gameObject.transform.position == snowball.transform.GetChild(j).gameObject.transform.position)
                 {
-                    GameObject.Destroy(gameObject.transform.GetChild(i).gameObject);
+                    Destroy(snowball.transform.GetChild(i).gameObject);
                 }
             }
         }
     }
 
-    void MoveVerticles()
+    //Deselecting the object and removing the childrens spheres (marks for vertices)
+    void Deselect(GameObject snowball)
     {
-        
+        for (int i = 0; i < snowball.transform.childCount; i++)
+        {
+            Destroy(snowball.transform.GetChild(i).gameObject);
+        }
     }
-
-
-
 }
