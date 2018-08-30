@@ -229,6 +229,11 @@ public class CatmullClark : MonoBehaviour
     public int[] cur_control_mesh_indices
     {
         get { return _cur_control_mesh.indices; }
+        set
+        {
+            _cur_control_mesh.indices = value;
+            _control_mesh_changed = true;
+        }
     }
 
     public Vector3[] orig_control_mesh_vertices
@@ -423,6 +428,8 @@ public struct MeshData
             }
         }
     }
+
+
 }
 
 

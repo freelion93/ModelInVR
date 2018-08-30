@@ -63,6 +63,8 @@
   <ItemGroup>
     <Compile Include="Assets\Project\Scripts\CatmullClark.cs" />
     <Compile Include="Assets\Project\Scripts\CreateSubDivObject.cs" />
+    <Compile Include="Assets\Project\Scripts\Extrude.cs" />
+    <Compile Include="Assets\Project\Scripts\MoveRotate.cs" />
     <Compile Include="Assets\Project\Scripts\VertMove.cs" />
     <Compile Include="Assets\SteamVR\Extras\SteamVR_GazeTracker.cs" />
     <Compile Include="Assets\SteamVR\Extras\SteamVR_LaserPointer.cs" />

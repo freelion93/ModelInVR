@@ -1,30 +1,20 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
-using System.Collections.Generic;
 
 public class CreateSubDivObject : MonoBehaviour
 {
-    private float dropForce = 2.0f;
+    float speed = 2.5f;
+    float speedRotation = 2.0f;
 
-    public float speedH = 2.0f;
-    public float speedV = 2.0f;
-
-    private float speed = 2.5f;
-    private float speedRotation = 2.0f;
-
-    private int ChangeLevel = 2;
+    int ChangeLevel = 2;
+    float Size = 1f;
     public Text SubdivLevel;
-
-    private float Size = 1f;
     public Text SizeOfObject;
 
     public Material Static;
 
     Ray myRay;
     RaycastHit hit;
-
-    public static Mesh control_mesh;
 
     void Start()
     {
@@ -38,7 +28,6 @@ public class CreateSubDivObject : MonoBehaviour
         ControlCreateObject();
         GetObject();
         MovementControl();
-
     }
 
     void CreateObject()
@@ -80,7 +69,7 @@ public class CreateSubDivObject : MonoBehaviour
                 3, 7, 4, 0,
             };
 
-            control_mesh = new Mesh();
+            Mesh control_mesh = new Mesh();
             control_mesh.Clear();
             control_mesh.vertices = vertices;
             control_mesh.SetIndices(indices, MeshTopology.Quads, 0);
@@ -101,6 +90,8 @@ public class CreateSubDivObject : MonoBehaviour
             {
                 Debug.Log(control_mesh.vertices[i]);
             }
+            //target.AddComponent<Rigidbody>();
+
         }
     }
 
@@ -149,6 +140,10 @@ public class CreateSubDivObject : MonoBehaviour
                 Debug.Log("Size can't be negative");
             }
         }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+
+        }
     }
 
     void GetObject()
@@ -172,7 +167,7 @@ public class CreateSubDivObject : MonoBehaviour
                     }
                 }
             }
-            if (hit.collider.name == "Sphere")
+            if (hit.collider.tag == "Selector")
             {
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
@@ -225,6 +220,7 @@ public class CreateSubDivObject : MonoBehaviour
             Spheres[i].transform.position = LocalVertices[i] + snowball.transform.position;
             Spheres[i].transform.localScale = new Vector3(0.1F, 0.1F, 0.1F) * Size;
             Spheres[i].AddComponent<VertMove>();
+            Spheres[i].tag = "Selector";
         }
 
         //The vertices array contains 24 elements, 
