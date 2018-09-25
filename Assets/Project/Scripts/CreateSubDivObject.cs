@@ -16,10 +16,24 @@ public class CreateSubDivObject : MonoBehaviour
     Ray myRay;
     RaycastHit hit;
 
+    char CurrAxis = 'x';
+    bool reverse = false;
+    public Text Axis;
+    public Text Direction;
+
+    float RotateDegreesPerSecond = 5.0f;
+    bool clockwise = false;
+    public Text Degrees;
+    public Text Clockwise;
+
     void Start()
     {
         SubdivLevel.text = "Subdivision Level: " + ChangeLevel.ToString();
         SizeOfObject.text = "Size: " + Size.ToString();
+        Axis.text = "Axis: " + CurrAxis.ToString().ToUpper();
+        Direction.text = "Inverse Direction: " + "No";
+        Degrees.text = "Degrees Per Sec: " + RotateDegreesPerSecond.ToString();
+        Clockwise.text = "Clockwise: " + "No";
     }
 
     void Update()
@@ -123,12 +137,12 @@ public class CreateSubDivObject : MonoBehaviour
             }
         }
         //Increasing and decreasing the size of object
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        if (Input.GetKeyDown(KeyCode.PageUp))
         {
             Size += 0.1f;
             SizeOfObject.text = "Size: " + Size.ToString();
         }
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKeyDown(KeyCode.PageDown))
         {
             if (Size > 0.1)
             {
@@ -140,10 +154,77 @@ public class CreateSubDivObject : MonoBehaviour
                 Debug.Log("Size can't be negative");
             }
         }
-        if (Input.GetKeyDown(KeyCode.R))
+
+        if (Input.GetKeyDown(KeyCode.RightArrow))
         {
+            if (CurrAxis == 'x')
+            {
+                CurrAxis = 'y';
+            }
+            else if (CurrAxis == 'y')
+            {
+                CurrAxis = 'z';
+            }
+            else
+            {
+                CurrAxis = 'x';
+            }
+            Axis.text = "Axis: " + CurrAxis.ToString().ToUpper();
+        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            if (!reverse)
+            {
+                reverse = true;
+                Direction.text = "Inverse Direction: " + "Yes";
+
+            }
+            else
+            {
+                reverse = false;
+                Direction.text = "Inverse Direction: " + "No";
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            if (RotateDegreesPerSecond < 90)
+            {
+                RotateDegreesPerSecond += 5.0f;
+            }
+            else
+            {
+                Debug.Log("Value > 90' ");
+            }
+            Degrees.text = "Degrees Per Sec: " + RotateDegreesPerSecond.ToString();
+        }
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            if (RotateDegreesPerSecond > 0)
+            {
+                RotateDegreesPerSecond -= 5.0f;
+            }
+            else
+            {
+                Debug.Log("Value < 0' ");
+            }
+            Degrees.text = "Degrees Per Sec: " + RotateDegreesPerSecond.ToString();
+        }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            if (!clockwise)
+            {
+                clockwise = true;
+                Clockwise.text = "Clockwise: " + "Yes";
+            }
+            else
+            {
+                clockwise = false;
+                Clockwise.text = "Clockwise: " + "No";
+            }
 
         }
+
     }
 
     void GetObject()
@@ -165,6 +246,15 @@ public class CreateSubDivObject : MonoBehaviour
                     {
                         Deselect(hit.collider.gameObject);
                     }
+                }
+
+                if (Input.GetButtonDown("Fire1"))
+                {
+                    MoveRotate.Moving(hit.collider.gameObject, CurrAxis, reverse);
+                }
+                if (Input.GetMouseButtonDown(2))
+                {
+                    MoveRotate.Rotate(hit.collider.gameObject, RotateDegreesPerSecond, clockwise);
                 }
             }
             if (hit.collider.tag == "Selector")
@@ -203,6 +293,7 @@ public class CreateSubDivObject : MonoBehaviour
         {
             transform.Rotate(Vector3.up * speedRotation);
         }
+
     }
 
     //Selecting the object and creating the childrens spheres (marks for vertices)

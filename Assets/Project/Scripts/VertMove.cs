@@ -52,8 +52,6 @@ public class VertMove : MonoBehaviour
         vector.name = "TheVector";
         vector.GetComponent<Renderer>().material.color = Color.yellow;
 
-
-
     }
 
 }
