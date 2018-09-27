@@ -244,7 +244,6 @@
 /Users/freelion/MasterProject/Temp/bin/Debug/UnityEngine.ParticlesLegacyModule.xml
 /Users/freelion/MasterProject/Temp/bin/Debug/Unity.UNetWeaver.dll.mdb
 /Users/freelion/MasterProject/Temp/bin/Debug/Unity.IvyParser.dll.mdb
-/Users/freelion/MasterProject/obj/Debug/Assembly-CSharp.csprojResolveAssemblyReference.cache
 /Users/freelion/MasterProject/obj/Debug/Assembly-CSharp.csproj.CoreCompileInputs.cache
 /Users/freelion/MasterProject/obj/Debug/Assembly-CSharp.dll
 /Users/freelion/MasterProject/obj/Debug/Assembly-CSharp.pdb

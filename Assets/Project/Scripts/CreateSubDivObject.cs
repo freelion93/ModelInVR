@@ -8,8 +8,10 @@ public class CreateSubDivObject : MonoBehaviour
 
     int ChangeLevel = 2;
     float Size = 1f;
-    public Text SubdivLevel;
-    public Text SizeOfObject;
+    [SerializeField]
+    Text SubdivLevel;
+    [SerializeField]
+    Text SizeOfObject;
 
     public Material Static;
 
@@ -18,13 +20,17 @@ public class CreateSubDivObject : MonoBehaviour
 
     char CurrAxis = 'x';
     bool reverse = false;
-    public Text Axis;
-    public Text Direction;
+    [SerializeField]
+    Text Axis;
+    [SerializeField]
+    Text Direction;
 
     float RotateDegreesPerSecond = 5.0f;
     bool clockwise = false;
-    public Text Degrees;
-    public Text Clockwise;
+    [SerializeField]
+    Text Degrees;
+    [SerializeField]
+    Text Clockwise;
 
     void Start()
     {
@@ -89,7 +95,6 @@ public class CreateSubDivObject : MonoBehaviour
             control_mesh.SetIndices(indices, MeshTopology.Quads, 0);
             control_mesh.RecalculateNormals();
 
-
             MeshFilter mf = target.AddComponent<MeshFilter>();
             mf.mesh = control_mesh;
             MeshRenderer mr = target.AddComponent<MeshRenderer>();
@@ -99,13 +104,6 @@ public class CreateSubDivObject : MonoBehaviour
 
             CatmullClark cc = target.AddComponent<CatmullClark>();
             cc.subdiv_level = ChangeLevel;
-
-            for (int i = 0; i < control_mesh.vertices.Length; i++)
-            {
-                Debug.Log(control_mesh.vertices[i]);
-            }
-            //target.AddComponent<Rigidbody>();
-
         }
     }
 
@@ -252,9 +250,13 @@ public class CreateSubDivObject : MonoBehaviour
                 {
                     MoveRotate.Moving(hit.collider.gameObject, CurrAxis, reverse);
                 }
-                if (Input.GetMouseButtonDown(2))
+                if (Input.GetButtonDown("Fire3"))
                 {
                     MoveRotate.Rotate(hit.collider.gameObject, RotateDegreesPerSecond, clockwise);
+                }
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    Extrude.MakeExtrusion(hit.collider.gameObject, hit);
                 }
             }
             if (hit.collider.tag == "Selector")
