@@ -7,7 +7,7 @@ public class CreateSubDivObject : MonoBehaviour
     float speedRotation = 2.0f;
 
     int ChangeLevel = 2;
-    float Size = 1f;
+    public static float Size = 1f;
     [SerializeField]
     Text SubdivLevel;
     [SerializeField]
@@ -44,13 +44,13 @@ public class CreateSubDivObject : MonoBehaviour
 
     void Update()
     {
-        CreateObject();
-        ControlCreateObject();
-        GetObject();
+        ObjectCreate();
+        ObjectInitControl();
+        ObjectManagment();
         MovementControl();
     }
 
-    void CreateObject()
+    void ObjectCreate()
     {
         if (Input.GetButtonDown("Fire2"))
         {
@@ -61,7 +61,7 @@ public class CreateSubDivObject : MonoBehaviour
 
             if (Physics.Raycast(myRay, out hit))
             {
-                target.transform.position = hit.point;
+                target.transform.position = hit.point + new Vector3(0, 0.75f, 0);
             }
             else
             {
@@ -69,17 +69,17 @@ public class CreateSubDivObject : MonoBehaviour
                 Destroy(target);
             }
 
-            Vector3[] vertices = new Vector3[8];
-            vertices[0] = new Vector3(-1, -1, -1) * Size;
-            vertices[1] = new Vector3(1, -1, -1) * Size;
-            vertices[2] = new Vector3(1, -1, 1) * Size;
-            vertices[3] = new Vector3(-1, -1, 1) * Size;
-            vertices[4] = new Vector3(-1, 1, -1) * Size;
-            vertices[5] = new Vector3(1, 1, -1) * Size;
-            vertices[6] = new Vector3(1, 1, 1) * Size;
-            vertices[7] = new Vector3(-1, 1, 1) * Size;
+            Vector3[] Vertices = new Vector3[8];
+            Vertices[0] = new Vector3(-1, -1, -1) * Size;
+            Vertices[1] = new Vector3(1, -1, -1) * Size;
+            Vertices[2] = new Vector3(1, -1, 1) * Size;
+            Vertices[3] = new Vector3(-1, -1, 1) * Size;
+            Vertices[4] = new Vector3(-1, 1, -1) * Size;
+            Vertices[5] = new Vector3(1, 1, -1) * Size;
+            Vertices[6] = new Vector3(1, 1, 1) * Size;
+            Vertices[7] = new Vector3(-1, 1, 1) * Size;
 
-            int[] indices =
+            int[] Indices =
             {
                 0, 1, 2, 3,
                 7, 6, 5, 4,
@@ -89,25 +89,25 @@ public class CreateSubDivObject : MonoBehaviour
                 3, 7, 4, 0,
             };
 
-            Mesh control_mesh = new Mesh();
-            control_mesh.Clear();
-            control_mesh.vertices = vertices;
-            control_mesh.SetIndices(indices, MeshTopology.Quads, 0);
-            control_mesh.RecalculateNormals();
+            Mesh Control_mesh = new Mesh();
+            Control_mesh.Clear();
+            Control_mesh.vertices = Vertices;
+            Control_mesh.SetIndices(Indices, MeshTopology.Quads, 0);
+            Control_mesh.RecalculateNormals();
 
-            MeshFilter mf = target.AddComponent<MeshFilter>();
-            mf.mesh = control_mesh;
-            MeshRenderer mr = target.AddComponent<MeshRenderer>();
-            mr.material.color = Color.white;
-            MeshCollider mc = target.AddComponent<MeshCollider>();
-            mc.material = null;
+            MeshFilter MF = target.AddComponent<MeshFilter>();
+            MF.mesh = Control_mesh;
+            MeshRenderer MR = target.AddComponent<MeshRenderer>();
+            MR.material.color = Color.white;
+            MeshCollider MC = target.AddComponent<MeshCollider>();
+            MC.material = null;
 
             CatmullClark cc = target.AddComponent<CatmullClark>();
             cc.subdiv_level = ChangeLevel;
         }
     }
 
-    void ControlCreateObject()
+    void ObjectInitControl()
     {
         //Changing the Level of subdivision
         if (Input.GetAxis("Mouse ScrollWheel") > 0f) // Increase
@@ -117,10 +117,6 @@ public class CreateSubDivObject : MonoBehaviour
                 ChangeLevel++;
                 SubdivLevel.text = "Subdivision Level: " + ChangeLevel.ToString();
             }
-            else
-            {
-                Debug.Log("Level of smoothing is too big");
-            }
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0f) // Decrease
         {
@@ -129,12 +125,8 @@ public class CreateSubDivObject : MonoBehaviour
                 ChangeLevel--;
                 SubdivLevel.text = "Subdivision Level: " + ChangeLevel.ToString();
             }
-            else
-            {
-                Debug.Log("Level of smoothing is too low");
-            }
         }
-        //Increasing and decreasing the size of object
+        //Increasing and decreasing the size of the object
         if (Input.GetKeyDown(KeyCode.PageUp))
         {
             Size += 0.1f;
@@ -147,12 +139,7 @@ public class CreateSubDivObject : MonoBehaviour
                 Size -= 0.1f;
                 SizeOfObject.text = "Size: " + Size.ToString();
             }
-            else
-            {
-                Debug.Log("Size can't be negative");
-            }
         }
-
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             if (CurrAxis == 'x')
@@ -175,7 +162,6 @@ public class CreateSubDivObject : MonoBehaviour
             {
                 reverse = true;
                 Direction.text = "Inverse Direction: " + "Yes";
-
             }
             else
             {
@@ -183,16 +169,11 @@ public class CreateSubDivObject : MonoBehaviour
                 Direction.text = "Inverse Direction: " + "No";
             }
         }
-
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             if (RotateDegreesPerSecond < 90)
             {
                 RotateDegreesPerSecond += 5.0f;
-            }
-            else
-            {
-                Debug.Log("Value > 90' ");
             }
             Degrees.text = "Degrees Per Sec: " + RotateDegreesPerSecond.ToString();
         }
@@ -201,10 +182,6 @@ public class CreateSubDivObject : MonoBehaviour
             if (RotateDegreesPerSecond > 0)
             {
                 RotateDegreesPerSecond -= 5.0f;
-            }
-            else
-            {
-                Debug.Log("Value < 0' ");
             }
             Degrees.text = "Degrees Per Sec: " + RotateDegreesPerSecond.ToString();
         }
@@ -220,18 +197,28 @@ public class CreateSubDivObject : MonoBehaviour
                 clockwise = false;
                 Clockwise.text = "Clockwise: " + "No";
             }
-
         }
-
     }
 
-    void GetObject()
+    void ObjectManagment()
     {
         myRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         bool doHit = Physics.Raycast(myRay, out hit, 500f);
+        Debug.DrawRay(myRay.origin, myRay.direction * 10, Color.yellow);
 
         if (doHit)
         {
+            if (hit.collider.tag == "Selector" && Input.GetKeyDown(KeyCode.Space))
+            {
+                if (hit.collider.gameObject.GetComponent<Renderer>().material.color == Color.blue)
+                {
+                    hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.red;
+                }
+                else
+                {
+                    hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.blue;
+                }
+            }
             if (hit.collider.name == "Snowball")
             {
                 if (Input.GetKeyDown(KeyCode.Space))
@@ -245,7 +232,6 @@ public class CreateSubDivObject : MonoBehaviour
                         Deselect(hit.collider.gameObject);
                     }
                 }
-
                 if (Input.GetButtonDown("Fire1"))
                 {
                     MoveRotate.Moving(hit.collider.gameObject, CurrAxis, reverse);
@@ -256,21 +242,11 @@ public class CreateSubDivObject : MonoBehaviour
                 }
                 if (Input.GetKeyDown(KeyCode.E))
                 {
+                    if (hit.collider.transform.childCount > 1)
+                    {
+                        Deselect(hit.collider.gameObject);
+                    }
                     Extrude.MakeExtrusion(hit.collider.gameObject, hit);
-                }
-            }
-            if (hit.collider.tag == "Selector")
-            {
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    if (hit.collider.gameObject.GetComponent<Renderer>().material.color == Color.blue)
-                    {
-                        hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.red;
-                    }
-                    else
-                    {
-                        hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.blue;
-                    }
                 }
             }
         }

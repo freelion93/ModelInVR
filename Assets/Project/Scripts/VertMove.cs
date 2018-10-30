@@ -18,6 +18,7 @@ public class VertMove : MonoBehaviour
         Index = Int32.Parse(gameObject.name);
         MeshFilter NewMeshFilter = gameObject.transform.parent.GetComponent<MeshFilter>();
         NewMeshFilter.sharedMesh.GetVertices(vertexBuffer);
+        Debug.Log(gameObject.name.ToString());
     }
 
     void OnMouseDrag()
@@ -36,22 +37,6 @@ public class VertMove : MonoBehaviour
     void OnMouseUp()
     {
         gameObject.transform.parent.GetComponent<MeshFilter>().sharedMesh.RecalculateNormals();
-    }
-
-    void MoveMultipleVertices(List<GameObject> spheres)
-    {
-        //calculating the resulting vector between selected objects
-        Vector3 direction = Vector3.zero;
-        for (int i = 0; i < spheres.Count; i++)
-        {
-            direction += spheres[i].transform.position;
-        }
-
-        GameObject vector = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        vector.transform.position = direction;
-        vector.name = "TheVector";
-        vector.GetComponent<Renderer>().material.color = Color.yellow;
-
     }
 
 }

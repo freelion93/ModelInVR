@@ -5,7 +5,7 @@ using UnityEngine;
 public class Extrude : MonoBehaviour
 {
     static int[] control_idices = new int[4];
-    static Vector3[] vertices = new Vector3[8];
+    static Vector3[] vertices = new Vector3[12];
     static Vector3[] newVertices = new Vector3[8];
 
     public static void MakeExtrusion(GameObject snowball, RaycastHit hit)
@@ -22,18 +22,6 @@ public class Extrude : MonoBehaviour
             Debug.Log(control_idices[i]);
         }
 
-        //the set of vertices of the object are
-        //for (int i = 0; i < vertices.Length; i++)
-        //{
-        //    vertices[i] = cc_subdiv.cur_control_mesh_vertices[i];
-        //}
-
-        //depending on what face indices are we determing the vertices
-        //for (int i = 0; i < control_idices.Length; i++)
-        //{
-        //    newVertices[i] = vertices[control_idices[i]];
-        //}
-
         int[] bottom = { 0, 1, 2, 3, };
         int[] top = { 7, 6, 5, 4, };
         int[] front = { 0, 4, 5, 1, };
@@ -41,31 +29,115 @@ public class Extrude : MonoBehaviour
         int[] left = { 2, 6, 7, 3, };
         int[] back = { 3, 7, 4, 0, };
 
-        if (control_idices == bottom)
+        for (int i = 0; i < 8; i++)
         {
-            Debug.Log("Bottom");
+            vertices[i] = cc_subdiv.cur_control_mesh_vertices[i];
         }
-        if (control_idices == top)
+
+        string CurrFace = null;
+        int[] var = { 0, 0, 0, 0 };
+        float coef = 1f;
+
+        if (control_idices[0] == 0 && control_idices[1] == 1)
         {
-            Debug.Log("Top");
+            CurrFace = "Bottom";
+            vertices[8] = vertices[0] + new Vector3(0, -1f * coef, 0);
+            vertices[9] = vertices[1] + new Vector3(0, -1f * coef, 0);
+            vertices[10] = vertices[2] + new Vector3(0, -1f * coef, 0);
+            vertices[11] = vertices[3] + new Vector3(0, -1f * coef, 0);
+            var = bottom;
         }
-        if (control_idices == front)
+        if (control_idices[0] == 7)
         {
-            Debug.Log("Front");
+            CurrFace = "Top";
+            vertices[8] = vertices[7] + new Vector3(0, 1f * coef, 0);
+            vertices[9] = vertices[6] + new Vector3(0, 1f * coef, 0);
+            vertices[10] = vertices[5] + new Vector3(0, 1f * coef, 0);
+            vertices[11] = vertices[4] + new Vector3(0, 1f * coef, 0);
+            var = top;
         }
-        if (control_idices == right)
+        if (control_idices[0] == 0 && control_idices[1] == 4)
         {
-            Debug.Log("Right");
+            CurrFace = "Front";
+            vertices[8] = vertices[0] + new Vector3(0, 0, -1f * coef);
+            vertices[9] = vertices[4] + new Vector3(0, 0, -1f * coef);
+            vertices[10] = vertices[5] + new Vector3(0, 0, -1f * coef);
+            vertices[11] = vertices[1] + new Vector3(0, 0, -1f * coef);
+            var = front;
         }
-        if (control_idices == left)
+        if (control_idices[0] == 1)
         {
-            Debug.Log("Left");
+            CurrFace = "Right";
+            vertices[8] = vertices[1] + new Vector3(1.5f * coef, 0, 0);
+            vertices[9] = vertices[5] + new Vector3(1.5f * coef, 0, 0);
+            vertices[10] = vertices[6] + new Vector3(1.5f * coef, 0, 0);
+            vertices[11] = vertices[2] + new Vector3(1.5f * coef, 0, 0);
+            var = right;
         }
-        if (control_idices == back)
+        if (control_idices[0] == 3)
         {
-            Debug.Log("Back");
+            CurrFace = "Left";
+            vertices[8] = vertices[3] + new Vector3(-1.5f * coef, 0, 0);
+            vertices[9] = vertices[7] + new Vector3(-1.5f * coef, 0, 0);
+            vertices[10] = vertices[4] + new Vector3(-1.5f * coef, 0, 0);
+            vertices[11] = vertices[0] + new Vector3(-1.5f * coef, 0, 0);
+            var = left;
         }
+        if (control_idices[0] == 2)
+        {
+            CurrFace = "Back";
+            vertices[8] = vertices[3] + new Vector3(0, 0, 1f * coef);
+            vertices[9] = vertices[2] + new Vector3(0, 0, 1f * coef);
+            vertices[10] = vertices[6] + new Vector3(0, 0, 1f * coef);
+            vertices[11] = vertices[7] + new Vector3(0, 0, 1f * coef);
+            var = back;
+        }
+        Debug.Log(CurrFace);
+
+        int[] Indices =
+         {
+                0, 1, 2, 3,
+                7, 6, 5, 4,
+                0, 4, 5, 1,
+                1, 5, 6, 2,
+                2, 6, 7, 3,
+                3, 7, 4, 0,
+                8, 9, 10, 11,
+                8, 11, var[3], var[0],
+                var[0], var[1], 9, 8,
+                11, 10, var[2], var[3],
+                10, 9, var[1], var[2],
+          };
+
+        if (GameObject.FindWithTag("Manipulator"))
+        {
+            Destroy(GameObject.FindGameObjectWithTag("Manipulator"));
+        }
+        else
+        {
+            CreateManupulator(snowball);
+        }
+
+        cc_subdiv.cur_control_mesh_vertices = vertices;
+
+        cc_subdiv.cur_control_mesh_indices = Indices;
+        snowball.transform.parent.GetComponent<MeshFilter>().sharedMesh.RecalculateNormals();
     }
 
+    public static void CreateManupulator(GameObject snowball)
+    {
+        Vector3 centerV = (vertices[8] + vertices[9] + vertices[10] + vertices[11]) / 4 + snowball.transform.position;
+        Debug.Log(centerV);
+        GameObject theV = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        theV.transform.position = centerV;
+        theV.transform.localScale = new Vector3(0.1F, 0.1F, 0.1F) * CreateSubDivObject.Size;
+        theV.GetComponent<Renderer>().material.color = Color.yellow;
+        theV.tag = "Manipulator";
+    }
+
+    public static void Manipulate()
+    {
+
+    }
 
 }
